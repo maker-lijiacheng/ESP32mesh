@@ -10,7 +10,7 @@ painlessMesh  mesh;
 // User stub
 void sendMessage() ; // Prototype so PlatformIO doesn't complain
 
-Task taskSendMessage( TASK_SECOND * 1 , TASK_FOREVER, &sendMessage );
+Task taskSendMessage( TASK_SECOND * 1 , TASK_FOREVER, &sendMessage ); 
 //创建一个子任务 间隔为一秒执行一次
 
 void sendMessage() { //发送一条字符串
@@ -28,7 +28,7 @@ void receivedCallback( uint32_t from, String &msg ) {//收到消息 （ID，字�
 
 void newConnectionCallback(uint32_t nodeId) {//mesh网络中检测到新节点，并读取nodeID值
     Serial.printf("--> startHere: New Connection, nodeId = %u\n", nodeId);
-}
+}  
 
 void changedConnectionCallback() {//mesh网络中发生变动
   Serial.printf("Changed connections\n");
@@ -51,7 +51,7 @@ void setup() {
   mesh.onChangedConnections(&changedConnectionCallback);
   mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
 
-  userScheduler.addTask( taskSendMessage );//创立子线程，可用于数据传输
+  userScheduler.addTask( taskSendMessage );//新建子线程，可用于数据传输
   taskSendMessage.enable();//子线程使能
 }
 
