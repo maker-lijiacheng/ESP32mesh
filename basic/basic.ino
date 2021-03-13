@@ -1,7 +1,7 @@
 #include "painlessMesh.h"
 //2021.3.2
-#define   MESH_PREFIX     "whateverYouLike"
-#define   MESH_PASSWORD   "somethingSneaky"
+#define   MESH_PREFIX     "clouds"
+#define   MESH_PASSWORD   "sattvalab"
 #define   MESH_PORT       5555
 //TASK_SECOND = 1000   //count
 Scheduler userScheduler; // to control your personal task
@@ -59,6 +59,4 @@ void setup() {
 void loop() { 
   mesh.update();//尽可能让这句话频繁运行
   //delay(1000);
-
-  
 }
