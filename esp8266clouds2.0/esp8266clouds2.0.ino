@@ -1,9 +1,8 @@
-#include <SoftwareSerial.h>
 #include "Arduino.h"
+#include <SoftwareSerial.h>
 #include "DFRobotDFPlayerMini.h"
 #include <Adafruit_NeoPixel.h>
 #include "painlessMesh.h"
-#include <SimpleTimer.h>
 
 #define   MESH_PREFIX     "whateverYouLike"
 #define   MESH_PASSWORD   "somethingSneaky"
@@ -32,7 +31,7 @@ int run_flag = 0 ;//微波传感器有人标志
 int run_number = 0;//有人状态时loop()运行次数
 int begin_time = 0 ;//有人状态时的时间标志位
 int normal_time = 0 ;//无人状态时的时间标志位
-int run_time_limit = 5000;//每种模式的运行时间 15s
+int run_time_limit = 15000;//每种模式的运行时间 15s
 
 int mode_init_flag = 0;//模式参数初始化标志位 0：可复位 1：复位完成 无人时会归0
 
@@ -45,7 +44,9 @@ int read_g = 0;
 int read_b = 0;
 int read_mode = 0;//从其他云接收到的mode值
 
-void sendMessage() 
+
+
+void sendMessage()
 { //发送一条字符串
   String msg = "";
   //msg += mesh.getNodeId();//字符串末尾添加信息来源
@@ -57,18 +58,17 @@ void sendMessage()
 }
 
 void receivedCallback( uint32_t from, String &msg ) {//收到消息 （ID，字符串）
-    Serial.printf("ID:%u MSG:%s\n", from, msg.c_str());
-    //解析字符串
-    read_r = String(msg.substring(msg.indexOf("R")+1,msg.indexOf("G"))).toInt();//截取并转为int类型
-    read_g = String(msg.substring(msg.indexOf("G")+1,msg.indexOf("B"))).toInt();
-    read_b = String(msg.substring(msg.indexOf("B")+1,msg.indexOf("M"))).toInt();
-    read_mode = String(msg.substring(msg.indexOf("M")+1,msg.indexOf("M")+2)).toInt();
-    //打印
-    Serial.print("R:");Serial.print(read_r);Serial.print("  ");//串口返回RGB值
-    Serial.print("G:");Serial.print(read_g);Serial.print("  ");
-    Serial.print("B:");Serial.print(read_b);Serial.print("  ");
-    Serial.print("M:");Serial.print(read_mode);Serial.println("  ");
-    
+  Serial.printf("ID:%u MSG:%s\n", from, msg.c_str());
+  // 解析字符串
+  read_r = String(msg.substring(msg.indexOf("R")+1,msg.indexOf("G"))).toInt();//截取并转为int类型
+  read_g = String(msg.substring(msg.indexOf("G")+1,msg.indexOf("B"))).toInt();
+  read_b = String(msg.substring(msg.indexOf("B")+1,msg.indexOf("M"))).toInt();
+  read_mode = String(msg.substring(msg.indexOf("M")+1,msg.indexOf("M")+2)).toInt();
+  // 打印
+  Serial.print("R:");Serial.print(read_r);Serial.print("  ");//串口返回RGB值
+  Serial.print("G:");Serial.print(read_g);Serial.print("  ");
+  Serial.print("B:");Serial.print(read_b);Serial.print("  ");
+  Serial.print("M:");Serial.print(read_mode);Serial.println("  ");
 }
 
 void newConnectionCallback(uint32_t nodeId) {//mesh网络中检测到新节点，并读取nodeID值
@@ -79,12 +79,12 @@ void changedConnectionCallback() {//mesh网络中发生变动
     Serial.printf("Changed connections\n");
 }
 
-void nodeTimeAdjustedCallback(int32_t offset) {//同步mesh时间戳
+void nodeTimeAdjustedCallback(int32_t offset) {// 同步mesh时间戳
     Serial.printf("Adjusted time %u. Offset = %d\n", mesh.getNodeTime(),offset);
 }
 
-void colorWipe(uint32_t color, int wait) {// 按顺序显示单种颜色 从头逐渐亮到尾
-  for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
+void colorWipe(uint32_t color, int wait) { //  按顺序显示单种颜色 从头逐渐亮到尾
+  for(int i=0; i<strip.numPixels(); i++) { //  For each pixel in strip...
     strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
     strip.show();                          //  Update strip to match
     delay(wait);                           //  Pause for a moment
@@ -93,7 +93,7 @@ void colorWipe(uint32_t color, int wait) {// 按顺序显示单种颜色 从头�
 
 void colorWipeAll(uint32_t color) {// 显示单种颜色 一次性刷新
   for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
-      strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+      strip.setPixelColor(i, color);       //  Set pixel's color (in RAM)
     }
     strip.show();                          //  Update strip to match
 }
@@ -158,6 +158,7 @@ void Mode_2_Lightening_Init()//闪电模式 初始化
 {
   Mode_Stop();//熄灭所有灯
   myPlayer.play(2);//播放音乐
+  
 }
 void Mode_3_rainbow()//七彩模式 单步运行
 {
@@ -188,29 +189,29 @@ void Mode_Nobody()//无人触发模式 随机一种颜色   *注意，执行一�
   colorWipeAll(strip.Color(send_r,send_g,send_b));
   strip.show();
   myPlayer.pause();//当执行效果规定时间到了以后停止当前音乐
-  }
+}
 void Mode_Stop()//所有灯带熄灭
-{ 
+{
   strip.clear();//灯带全黑
   strip.show();//效果生效
 }
 
 /****************************************************************/
-/****************************************************************/
-void setup() {
-  Serial.begin(115200);//USB串口波特率
-  mySerial.begin(9600);//MP3模块串口波特率
-  myPlayer.begin(mySerial);//MP3模块初始化
-  myPlayer.volume(mp3_volume); //MP3模块音量大小
 
-  strip.begin();//WS2812初始化
-  strip.setBrightness(BRIGHTNES); // Set BRIGHTNESS to about 1/5 (max = 255)
-  strip.clear();//灯带全黑
-  strip.show();//效果生效
+void setup() {
+  Serial.begin(115200);           //USB串口波特率
+  mySerial.begin(9600);           //MP3模块串口波特率
+  myPlayer.begin(mySerial);       //MP3模块初始化
+  myPlayer.volume(mp3_volume);    //MP3模块音量大小
+
+  strip.begin();                  //WS2812初始化
+  strip.setBrightness(BRIGHTNES); // Set BRIGHTNESS to about (max = 255)
+  strip.clear();                  //灯带全黑
+  strip.show();                   //效果生效
   
   mesh.setDebugMsgTypes( ERROR | STARTUP );
 
-  mesh.init( MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT );//初始化mesh网络
+  mesh.init( MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT ); //初始化mesh网络
   
   mesh.onReceive(&receivedCallback);                      //收到一条群发消息，返回消息值
   mesh.onNewConnection(&newConnectionCallback);           //mesh网络中检测到新节点，并读取nodeID值
@@ -226,7 +227,7 @@ void setup() {
 //  pinMode(MICROWAVEPIN, INPUT_PULLUP);
 //  attachInterrupt(digitalPinToInterrupt(MICROWAVEPIN), attachInterrupt_fun, FALLING);   //设置微波传感器管脚为中断下降沿触发
 
-/* 灯带基础显示程序
+  /* 灯带基础显示程序
   colorWipe(strip.Color(  0,   0, 255), 5); // Blue
   colorWipeAll(strip.Color(  0,   0, 255));
   rainbow(20);
@@ -237,26 +238,26 @@ void setup() {
 void loop(){
   mesh.update();    //尽可能让这句话频繁运行
   
-  if(digitalRead(MICROWAVEPIN)==0 && run_flag == 0){//无效果运行时，微波传感器被触发 
-    attachInterrupt_fun();//触发处理程序
-    run_flag = 1 ;// 开始执行效果标志，0：无人   1：有人触发
+  if(digitalRead(MICROWAVEPIN)==0 && run_flag == 0){  //无效果运行时，微波传感器被触发 
+    attachInterrupt_fun();  //触发处理程序
+    run_flag = 1 ;          // 开始执行效果标志，0：无人   1：有人触发
   }
   
-  if(run_flag==1){ // 开始运行标志(记录效果开始时的系统运行时间)
+  if(run_flag==1){ //开始运行标志(记录效果开始时的系统运行时间)
     begin_time = millis();        //记录当前的开始时间
     run_flag = 2;                 //2代表开始执行动态效果
   }
   
-  if(run_flag==2){ // 自加计数程序(在运行过程中记录程序循环的次数)
+  if(run_flag==2){ //自加计数程序(在运行过程中记录程序循环的次数)
     run_number = run_number + 1 ; //标志模式运行次数，每次loop自加1
   }
   
   if(millis() - begin_time > run_time_limit && run_flag == 2 ){//当前模式执行15秒以后停止
     run_flag = 0;         // 无人运行标志 使用系统运行时间来结束当前效果
-    old_mode = run_mode;  //记录上次的模式
+    old_mode = run_mode;  // 记录上次的模式
     run_mode = 0;         // 无人运行模式
-    mode_init_flag = 0;   //模式复位标志位
-    Mode_Nobody(); //无人时显示一种随机颜色
+    mode_init_flag = 0;   // 模式复位标志位
+    Mode_Nobody();        // 无人时显示一种随机颜色
     Serial.println("MICROWAVE PIN READY!!!");  
   }
   
@@ -271,26 +272,23 @@ void loop(){
 
 //ICACHE_RAM_ATTR void attachInterrupt_fun()//微波传感器管脚硬件中断
 void attachInterrupt_fun()
-{ 
+{
   Serial.println("ESP8266 GPIO16 FALLING!!!");
 //Serial.println(digitalRead(MICROWAVEPIN));//微波传感器管脚
   
   if(run_flag == 0){//从无人状态切换到动态效果时，做一次运行次数归零
     run_number = 0;//程序运行次数清零
-
     do{
       run_mode = random(1,5);
     }while(run_mode == old_mode);//随机1~4mode，并群发给其他云
-
     do{
       send_r = random(0,255);
       send_g = random(0,255);
       send_b = random(0,255);
     }while(!(send_r >= 200 || send_g >= 200 || send_b >= 200));//如果随机出暗色，就再重新取一次值
-
   }
-  Serial.print("R:");Serial.print(send_r);Serial.print("  ");//串口返回RGB值
-  Serial.print("G:");Serial.print(send_g);Serial.print("  ");
-  Serial.print("B:");Serial.print(send_b);Serial.print("  ");
-  Serial.print("M:");Serial.print(run_mode);Serial.println("  ");
+  Serial.print("R:");   Serial.print(send_r);   Serial.print("  ");//查看生成的 R G B M 值
+  Serial.print("G:");   Serial.print(send_g);   Serial.print("  ");
+  Serial.print("B:");   Serial.print(send_b);   Serial.print("  ");
+  Serial.print("M:");  Serial.print(run_mode);  Serial.println("  ");
 }
