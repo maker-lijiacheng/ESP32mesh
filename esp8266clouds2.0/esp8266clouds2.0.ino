@@ -12,7 +12,7 @@ Scheduler userScheduler;  // to control your personal task 创建子线程
 painlessMesh  mesh;       // 定义mesh联网
 
 #define PIN           12  // On Trinket or Gemma, suggest changing this to 1
-#define NUMPIXELS     600 // Popular NeoPixel ring size
+#define NUMPIXELS     600 // Popular NeoPixel ring size    //NUMPIXELS=strip.numPixels();
 #define MICROWAVEPIN  16  //微波传感器管脚
 #define BRIGHTNES     255  //灯带亮度设置 0~255
 
@@ -34,7 +34,7 @@ int begin_time = 0 ;//有人状态时的时间标志位
 int normal_time = 0 ;//无人状态时的时间标志位
 int run_time_limit = 5000;//每种模式的运行时间 15s
 
-int mode_init_flag = 0;//模式参数初始化标志位 0：可复位 1：不可复位 无人时会归0
+int mode_init_flag = 0;//模式参数初始化标志位 0：可复位 1：复位完成 无人时会归0
 
 int send_r = 0; //有人时，随机生成3个RGB值，并发送给其他云
 int send_g = 0;
@@ -93,7 +93,7 @@ void colorWipe(uint32_t color, int wait) {// 按顺序显示单种颜色 从头�
 
 void colorWipeAll(uint32_t color) {// 显示单种颜色 一次性刷新
   for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
-    strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+      strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
     }
     strip.show();                          //  Update strip to match
 }
@@ -123,8 +123,6 @@ void rainbow(uint8_t wait) {
   }
 }
 
-
-
 void rainbowCycle(uint8_t wait) {
   uint16_t i, j;
 
@@ -143,7 +141,6 @@ void Mode_1_Morning()//清晨模式 单步运行
     Mode_1_Morning_Init();
     mode_init_flag = 1;
   }
-  
 }
 void Mode_1_Morning_Init()//清晨模式 初始化
 {
@@ -190,8 +187,8 @@ void Mode_Nobody()//无人触发模式 随机一种颜色   *注意，执行一�
 {
   colorWipeAll(strip.Color(send_r,send_g,send_b));
   strip.show();
-  myPlayer.pause();
-}
+  myPlayer.pause();//当执行效果规定时间到了以后停止当前音乐
+  }
 void Mode_Stop()//所有灯带熄灭
 { 
   strip.clear();//灯带全黑
@@ -223,7 +220,7 @@ void setup() {
   userScheduler.addTask(taskSendMessage);   //新建子线程，可用于数据传输
   taskSendMessage.enable();                 //子线程使能
   
-  pinMode(MICROWAVEPIN, INPUT);
+  pinMode(MICROWAVEPIN, INPUT);             //初始化微波传感器管脚为输入模式
   
 //  16号管脚不支持中断触发 
 //  pinMode(MICROWAVEPIN, INPUT_PULLUP);
@@ -245,12 +242,12 @@ void loop(){
     run_flag = 1 ;// 开始执行效果标志，0：无人   1：有人触发
   }
   
-  if(run_flag==1){ // 开始运行标志
+  if(run_flag==1){ // 开始运行标志(记录效果开始时的系统运行时间)
     begin_time = millis();        //记录当前的开始时间
     run_flag = 2;                 //2代表开始执行动态效果
   }
   
-  if(run_flag==2){ // 自加计数程序
+  if(run_flag==2){ // 自加计数程序(在运行过程中记录程序循环的次数)
     run_number = run_number + 1 ; //标志模式运行次数，每次loop自加1
   }
   
@@ -260,7 +257,7 @@ void loop(){
     run_mode = 0;         // 无人运行模式
     mode_init_flag = 0;   //模式复位标志位
     Mode_Nobody(); //无人时显示一种随机颜色
-    Serial.println("MICROWAVEPIN READY!!!");  
+    Serial.println("MICROWAVE PIN READY!!!");  
   }
   
   switch (run_mode)
@@ -279,34 +276,21 @@ void attachInterrupt_fun()
 //Serial.println(digitalRead(MICROWAVEPIN));//微波传感器管脚
   
   if(run_flag == 0){//从无人状态切换到动态效果时，做一次运行次数归零
-    run_number = 0;
+    run_number = 0;//程序运行次数清零
+
     do{
       run_mode = random(1,5);
     }while(run_mode == old_mode);//随机1~4mode，并群发给其他云
+
     do{
       send_r = random(0,255);
       send_g = random(0,255);
       send_b = random(0,255);
     }while(!(send_r >= 200 || send_g >= 200 || send_b >= 200));//如果随机出暗色，就再重新取一次值
+
   }
   Serial.print("R:");Serial.print(send_r);Serial.print("  ");//串口返回RGB值
   Serial.print("G:");Serial.print(send_g);Serial.print("  ");
   Serial.print("B:");Serial.print(send_b);Serial.print("  ");
   Serial.print("M:");Serial.print(run_mode);Serial.println("  ");
 }
-
-/*colorWipe(strip.Color(255,   0,   0), 5); // Red
-  strip.clear();
-  colorWipe(strip.Color(  0, 255,   0), 5); // Green
-  strip.clear();
-  colorWipe(strip.Color(  0,   0, 255), 5); // Blue
-  strip.clear();
-  colorWipeAll(strip.Color(  255,   0, 0));
-  delay(1000);
-  colorWipeAll(strip.Color(  0,   255, 0));
-  delay(1000);
-  colorWipeAll(strip.Color(  0,   0, 255));
-  delay(1000);
-  rainbow(20);             // Flowing rainbow cycle along the whole strip
-  delay(2000);
-  rainbowCycle(20);   */
