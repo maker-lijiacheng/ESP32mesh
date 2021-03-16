@@ -33,6 +33,13 @@ int begin_time = 0 ;//有人状态时的时间标志位
 int normal_time = 0 ;//无人状态时的时间标志位
 int run_time_limit = 15000;//每种模式的运行时间 15s
 
+int mp3_begin_time = 0 ;//无人状态时的音乐开始时间标志位
+int mp3_begin_time = 0 ;//无人状态时的音乐开始时间标志位
+
+int nobody_old_mp3num = 0 ;//无人模式时，旧的音乐序号
+int nobody_new_mp3num = 0 ;//无人模式时，新生成音乐序号
+int mp3_between_time = 22000 ;//无人模式时，两首音乐中的间隔
+
 int mode_init_flag = 0;//模式参数初始化标志位 0：可复位 1：复位完成 无人时会归0
 
 int send_r = 0; //有人时，随机生成3个RGB值，并发送给其他云
@@ -144,6 +151,7 @@ void Mode_1_Morning()//清晨模式 单步运行
 }
 void Mode_1_Morning_Init()//清晨模式 初始化
 {
+  myPlayer.pause();//关闭音乐
   Mode_Stop();//熄灭所有灯
   myPlayer.play(1);//播放音乐
 }
@@ -156,6 +164,7 @@ void Mode_2_Lightening()//闪电模式 单步运行
 }
 void Mode_2_Lightening_Init()//闪电模式 初始化
 {
+  myPlayer.pause();//关闭音乐
   Mode_Stop();//熄灭所有灯
   myPlayer.play(2);//播放音乐
   
@@ -169,6 +178,7 @@ void Mode_3_rainbow()//七彩模式 单步运行
 }
 void Mode_3_rainbow_Init()//七彩模式 初始化
 {
+  myPlayer.pause();//关闭音乐
   Mode_Stop();//熄灭所有灯  
   myPlayer.play(3);//播放音乐
 }
@@ -181,8 +191,21 @@ void Mode_4_flowing()//流动模式 单步运行
 }
 void Mode_4_flowing_Init()//流动模式 初始化
 {
+  myPlayer.pause();//关闭音乐
   Mode_Stop();//熄灭所有灯  
   myPlayer.play(4);//播放音乐
+}
+Mode_0_Nobody(){//无人模式 控制随机生成音乐
+  mp3_between_time = run_time_limit * 2 ;  //（每隔30秒随机一段15s声音）
+  if(millis() - mp3_begin_time > mp3_between_time){//当前模式执行15秒以后停止
+    do{
+      nobody_new_mp3num = random(1,5);
+    }while(nobody_new_mp3num == nobody_old_mp3num);//随机1~4音乐序号
+  
+    mp3_begin_time = 
+  }
+
+  
 }
 void Mode_Nobody()//无人触发模式 随机一种颜色   *注意，执行一次就会重新生成一种颜色 
 {
@@ -257,12 +280,15 @@ void loop(){
     old_mode = run_mode;  // 记录上次的模式
     run_mode = 0;         // 无人运行模式
     mode_init_flag = 0;   // 模式复位标志位
-    Mode_Nobody();        // 无人时显示一种随机颜色
+    Mode_Nobody();        // 无人时显示一种随机颜色 （执行一次，生成个颜色就完事）
+    nobody_old_mp3num = random(1,5);
+    myPlayer.play(nobody_old_mp3num);//播放随机音乐
     Serial.println("MICROWAVE PIN READY!!!");  
   }
   
   switch (run_mode)
   { 
+    case 0:   Mode_0_Nobody();       break;//一直执行，累计时间，控制无人时的声音
     case 1:   Mode_1_Morning();      break;
     case 2:   Mode_2_Lightening();   break;
     case 3:   Mode_3_rainbow();      break;
