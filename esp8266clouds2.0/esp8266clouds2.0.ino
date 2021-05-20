@@ -187,7 +187,7 @@ void Mode_3_rainbow()//七彩模式 单步运行
     mode_init_flag = 1;
   }
   for(int i=0; i<strip.numPixels(); i++) { //生成一组彩虹色 0-360为一组彩虹，超过360的从头开始亮
-    Mode_3_i = Mode_3_i + i % 360 ;        //对灯号进行处理   用Mode_3_i去计算需要显示的彩虹色，i为实际的灯号
+    Mode_3_i = (Mode_3_i + i) % 360 ;        //对灯号进行处理   用Mode_3_i去计算需要显示的彩虹色，i为实际的灯号
     if(i<=120){
       Mode_3_R = 255 - Mode_3_i * 255 / 120 ;
       Mode_3_G = Mode_3_i * 255 / 120 ;
