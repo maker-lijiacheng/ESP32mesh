@@ -15,7 +15,7 @@ painlessMesh  mesh;       // 定义mesh联网
 #define MICROWAVEPIN  16  //微波传感器管脚
 #define BRIGHTNES     255  //灯带亮度设置 0~255
 
-void sendMessage(); // Prototype so PlatformIO doesn't complain
+void sendMessage(); // Prototype so PlatformIO doesn't complain test
 void attachInterrupt_fun();
 
 SoftwareSerial mySerial(13, 14);  //MP3模块软串口管脚
