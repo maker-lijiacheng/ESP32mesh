@@ -11,7 +11,7 @@ Scheduler userScheduler;  // to control your personal task 创建子线程
 painlessMesh  mesh;       // 定义mesh联网
 
 #define PIN           12  //灯带管脚
-#define NUMPIXELS     600 //灯带数量    //NUMPIXELS=strip.numPixels();
+#define NUMPIXELS     14 //灯带数量    //NUMPIXELS=strip.numPixels();
 #define MICROWAVEPIN  16  //微波传感器管脚
 #define BRIGHTNES     255  //灯带亮度设置 0~255
 
@@ -34,13 +34,23 @@ int normal_time = 0 ;//无人状态时的时间标志位
 int run_time_limit = 15000;//每种模式的运行时间 15s
 
 int mp3_begin_time = 0 ;//无人状态时的音乐开始时间标志位
-int mp3_begin_time = 0 ;//无人状态时的音乐开始时间标志位
 
 int nobody_old_mp3num = 0 ;//无人模式时，旧的音乐序号
 int nobody_new_mp3num = 0 ;//无人模式时，新生成音乐序号
 int mp3_between_time = 22000 ;//无人模式时，两首音乐中的间隔
 
 int mode_init_flag = 0;//模式参数初始化标志位 0：可复位 1：复位完成 无人时会归0
+
+int Mode_2_oldtime = 0;//定时标记
+int Mode_2_flashtime = 3000;//出现闪电的间隔
+int Mode_2_runmode = 0;
+int Mode_2_flashnumber = 0;//闪电闪烁的次数
+int Mode_2_R = 255;//设置闪电的颜色
+int Mode_2_G = 255;
+int Mode_2_B = 255;
+int Mode_2_BRIGHTNES = 255;
+int Mode_2_flashnumberrandom = 0; 
+int Mode_2_flashtimerandom = 0; 
 
 int Mode_3_R = 0; 
 int Mode_3_G = 0; 
@@ -49,9 +59,16 @@ int Mode_3_H = 0;
 int Mode_3_i = 0;
 int Mode_3_oldtime = 0;
 
+int Mode_4_R = 0; 
+int Mode_4_G = 255; 
+int Mode_4_B = 0; 
+int Mode_4_i = 0;
+int Mode_4_oldtime = 0;
+
 int send_r = 0; //有人时，随机生成3个RGB值，并发送给其他云
 int send_g = 0;
 int send_b = 0;
+
 int groups = 1;//定义每组云的分组信息  1、2、3、4  共四组云
 
 int read_r = 0; //从其他云接收到的RGB值
@@ -173,12 +190,96 @@ void Mode_2_Lightening()//闪电模式 单步运行
     Mode_2_Lightening_Init();
     mode_init_flag = 1;
   }
+  if(millis() - Mode_2_oldtime > Mode_2_flashtime){
+    Mode_2_flashtime = random(10000,20000);//这里设置闪电模式每一阶段的间隔时间范围
+    Mode_2_runmode = 1; //进入一阶段 共四个阶段 1亮起 2闪烁 3熄灭 0等待
+    strip.setBrightness(1);//设置最小亮度
+  }
+  
+
+  if(Mode_2_runmode == 1){//1亮起
+    for(int i=0; i<strip.numPixels(); i++) {//全部设置为白色
+      strip.setPixelColor(i,strip.Color(Mode_2_R,Mode_2_G,Mode_2_B));
+    }
+    if(Mode_2_BRIGHTNES<255){
+      strip.setBrightness(Mode_2_BRIGHTNES);
+      strip.show();
+      if(millis() - Mode_2_oldtime > 10){//这里调节亮起的速度
+        Mode_2_BRIGHTNES = Mode_2_BRIGHTNES + 1 ; //亮度每次自加1
+        Mode_2_oldtime = millis() ;//记录上次累加时间
+      }
+    }else if(Mode_2_BRIGHTNES>=255){
+      Mode_2_BRIGHTNES = 255;
+      Mode_2_runmode = 2;
+      strip.setBrightness(Mode_2_BRIGHTNES);//防止出错，重设一次亮度初始值    
+      Mode_2_flashnumber = random(2,10);
+    } 
+  }
+  
+  if(Mode_2_runmode == 2){//2闪烁
+    if(millis() - Mode_2_oldtime > Mode_2_flashtimerandom){//这里调节闪烁的间隔
+        Mode_2_flashnumber = Mode_2_flashnumber + 1 ; //次数每次自加1
+        Mode_2_flashtimerandom = random(10,300); //闪烁的时间间隔，每次随机
+        Mode_2_oldtime = millis() ;//记录上次累加时间
+      }
+    if((Mode_2_flashnumber % 2) == 0){
+      for(int i=0; i<(strip.numPixels()/2); i++) {                  //前一半
+        strip.setPixelColor(i,strip.Color(0,0,0));
+      }
+      for(int i=(strip.numPixels()/2); i<strip.numPixels(); i++) {  //后一半
+        strip.setPixelColor(i,strip.Color(Mode_2_R,Mode_2_G,Mode_2_B));
+      }
+      strip.show();
+    }else if((Mode_2_flashnumber % 2) == 1){
+      for(int i=0; i<(strip.numPixels()/2); i++) {                  //前一半
+        strip.setPixelColor(i,strip.Color(Mode_2_R,Mode_2_G,Mode_2_B));
+      }
+      for(int i=(strip.numPixels()/2); i<strip.numPixels(); i++) {  //后一半
+        strip.setPixelColor(i,strip.Color(0,0,0));
+      }
+      strip.show();
+    }
+    if(Mode_2_flashnumber >= Mode_2_flashnumberrandom){
+      Mode_2_runmode = 3;
+      Mode_2_flashnumber = 0;
+    }
+  }
+
+  if(Mode_2_runmode == 3){//3熄灭
+    for(int i=0; i<strip.numPixels(); i++) {//全部设置为白色
+      strip.setPixelColor(i,strip.Color(Mode_2_R,Mode_2_G,Mode_2_B));
+    }
+    if(Mode_2_BRIGHTNES>=0){
+      strip.setBrightness(Mode_2_BRIGHTNES);
+      strip.show();
+      if(millis() - Mode_2_oldtime > 20){//这里调节暗下的速度
+        Mode_2_BRIGHTNES = Mode_2_BRIGHTNES - 1 ; //亮度每次自减1
+        Mode_2_oldtime = millis() ;//记录上次累加时间
+      }
+    }else if(Mode_2_BRIGHTNES<=0){
+      Mode_2_runmode = 4;
+      for(int i=0; i<strip.numPixels(); i++) {//全部设置为黑色
+        strip.setPixelColor(i,strip.Color(0,0,0));
+      }
+      Mode_2_BRIGHTNES = 255;
+      strip.setBrightness(Mode_2_BRIGHTNES);//防止出错，重设一次亮度初始值    
+    } 
+  }
+
+  if(Mode_2_runmode == 4){//4熄灭等待
+    if(millis() - Mode_2_oldtime > 1000){
+      Mode_Stop();//熄灭所有灯  
+    }
+  }
 }
 void Mode_2_Lightening_Init()//闪电模式 初始化
 {
   myPlayer.pause();//关闭音乐
   Mode_Stop();//熄灭所有灯
   myPlayer.play(2);//播放音乐
+  Mode_2_oldtime = 0;
+  Mode_2_runmode = 0;
+  Mode_2_flashnumberrandom = random(15,35); //闪烁多少次数
 }
 void Mode_3_rainbow()//七彩模式 单步运行
 {
@@ -186,17 +287,17 @@ void Mode_3_rainbow()//七彩模式 单步运行
     Mode_3_rainbow_Init();
     mode_init_flag = 1;
   }
-  for(int i=0; i<strip.numPixels(); i++) { //生成一组彩虹色 0-360为一组彩虹，超过360的从头开始亮
-    Mode_3_i = (Mode_3_i + i) % 360 ;        //对灯号进行处理   用Mode_3_i去计算需要显示的彩虹色，i为实际的灯号
+  for(int i=0; i<strip.numPixels(); i++) {    //生成一组彩虹色 0-360为一组彩虹，超过360的从头开始亮
+    Mode_3_i = (Mode_3_i + i) % 360 ;         //对灯号进行处理 用Mode_3_i去计算需要显示的彩虹色，i为实际的灯号
     if(i<=120){
       Mode_3_R = 255 - Mode_3_i * 255 / 120 ;
       Mode_3_G = Mode_3_i * 255 / 120 ;
       Mode_3_B = 0 ;
-    }else(i<=240){
+    }else if(i<=240){
       Mode_3_R = 0 ;
       Mode_3_G = 255 - (Mode_3_i - 120) * 255 / 120 ;
       Mode_3_B = (Mode_3_i - 120) * 255 / 120 ;
-    }else(i<=360){
+    }else if(i<=360){
       Mode_3_R = (Mode_3_i - 240) * 255 / 120 ;
       Mode_3_G = 0 ;
       Mode_3_B = 255 - (Mode_3_i - 240) * 255 / 120 ;
@@ -208,6 +309,7 @@ void Mode_3_rainbow()//七彩模式 单步运行
   }    
   if(millis() - Mode_3_oldtime > 30){//这里调节彩虹循环的速度
     Mode_3_i = Mode_3_i + 1 ; //序号灯每次自加1
+    Mode_3_oldtime = millis() ;//记录上次累加时间
   }
   strip.show();             //RGB灯生效
   delay(1);                 
@@ -217,6 +319,7 @@ void Mode_3_rainbow_Init()//七彩模式 初始化
   myPlayer.pause();//关闭音乐
   Mode_Stop();//熄灭所有灯  
   myPlayer.play(3);//播放音乐
+  Mode_3_i = 0;//将序号清零
 }
 void Mode_4_flowing()//流动模式 单步运行
 {
@@ -224,12 +327,32 @@ void Mode_4_flowing()//流动模式 单步运行
     Mode_4_flowing_Init();
     mode_init_flag = 1;
   }
+  if(Mode_4_i<=strip.numPixels()*3/4){
+    for(int i=Mode_4_i; i<strip.numPixels()/4+Mode_4_i; i++) {    
+      strip.setPixelColor(i,strip.Color(Mode_4_R,Mode_4_G,Mode_4_B));      
+    } 
+  }else if(Mode_4_i>=strip.numPixels()*3/4){
+    for(int i=Mode_4_i; i<strip.numPixels(); i++) {    
+      strip.setPixelColor(i,strip.Color(Mode_4_R,Mode_4_G,Mode_4_B));      
+    }
+    for(int i=0; i<(strip.numPixels()-Mode_4_i); i++) {    
+      strip.setPixelColor(i,strip.Color(Mode_4_R,Mode_4_G,Mode_4_B));      
+    }
+  }
+  if(millis() - Mode_4_oldtime > 30){//这里调节循环速度
+    Mode_4_i = Mode_4_i + 1 ; //序号灯每次自加1
+    Mode_4_i = Mode_4_i % strip.numPixels();
+    Mode_4_oldtime = millis() ;//记录上次累加时间
+  }
+  strip.show();             //RGB灯生效
+  delay(1);  
 }
 void Mode_4_flowing_Init()//流动模式 初始化
 {
   myPlayer.pause();   //关闭音乐
   Mode_Stop();        //熄灭所有灯  
   myPlayer.play(4);   //播放音乐
+  Mode_4_i = 0;//将序号清零
 }
 void Mode_0_Nobody(){//无人模式 控制随机生成音乐  
 //功能：无人时一直执行这个函数，每间隔15秒随机出一个新的音乐
@@ -255,6 +378,60 @@ void Mode_Stop()//所有灯带熄灭
   strip.clear();//灯带全黑
   strip.show();//效果生效
 }
+void follower_cloud()//小云程序
+{
+  //read_r  read_g  read_b  read_groups read_mode
+  if(read_groups == groups){//分组校验
+    run_mode = read_mode ;//读取模式状态值
+  }
+  if(run_mode == 0 && read_groups == groups){ //模式以及分组校验
+    colorWipeAll(strip.Color(read_r,read_g,read_b));//让一组云显示同一种颜色
+    strip.show();
+  }
+  switch (run_mode)
+  {
+    case 1:   Mode_1_Morning();      break;//每执行一次效果运动一点
+    case 2:   Mode_2_Lightening();   break;
+    case 3:   Mode_3_rainbow();      break;
+    case 4:   Mode_4_flowing();      break;
+  }
+}
+void control_cloud()//主云程序
+{
+  if(digitalRead(MICROWAVEPIN)==0 && run_flag == 0){  //无效果运行时，微波传感器被触发 
+    attachInterrupt_fun();  //触发处理程序
+    run_flag = 1 ;          // 开始执行效果标志，0：无人   1：有人触发
+  }
+  
+  if(run_flag==1){ //开始运行标志(记录效果开始时的系统运行时间)
+    begin_time = millis();        //记录当前的开始时间
+    run_flag = 2 ;                 //2代表开始执行动态效果
+  }
+  
+  if(run_flag==2){ //自加计数程序(在运行过程中记录程序循环的次数)
+    run_number = run_number + 1 ; //标志模式运行次数，每次loop自加1
+  }
+  
+  if((millis() - begin_time > run_time_limit) && run_flag == 2 ){//当前模式执行15秒以后停止
+    run_flag = 0;         // 无人运行标志 使用系统运行时间来结束当前效果
+    old_mode = run_mode;  // 记录上次的模式
+    run_mode = 0;         // 重新设置为无人运行模式
+    mode_init_flag = 0;   // 模式复位标志位
+    Mode_Nobody();        // 无人时显示一种随机颜色 （执行一次，生成个颜色就完事）
+    nobody_old_mp3num = random(1,5);//
+    myPlayer.play(nobody_old_mp3num);//播放随机音乐
+    Serial.println("MICROWAVE PIN READY!!!");//打印接受管脚状态
+  }
+  switch (run_mode)
+  {
+    case 0:   Mode_0_Nobody();       break;//一直执行，累计时间，控制无人时的声音
+    case 1:   Mode_1_Morning();      break;//每执行一次效果运动一点
+    case 2:   Mode_2_Lightening();   break;
+    case 3:   Mode_3_rainbow();      break;
+    case 4:   Mode_4_flowing();      break;
+  }
+}
+
 
 /****************************************************************/
 
@@ -282,7 +459,7 @@ void setup() {
   taskSendMessage.enable();                 //子线程使能
   
   pinMode(MICROWAVEPIN, INPUT);             //初始化微波传感器管脚为输入模式
-  
+  pinMode(2, OUTPUT); //调试小灯，每次loop闪烁一次
 //  16号管脚不支持中断触发 
 //  pinMode(MICROWAVEPIN, INPUT_PULLUP);
 //  attachInterrupt(digitalPinToInterrupt(MICROWAVEPIN), attachInterrupt_fun, FALLING);   //设置微波传感器管脚为中断下降沿触发
@@ -296,40 +473,9 @@ void setup() {
 
 void loop(){
   mesh.update();    //尽可能让这句话频繁运行
-  
-  if(digitalRead(MICROWAVEPIN)==0 && run_flag == 0){  //无效果运行时，微波传感器被触发 
-    attachInterrupt_fun();  //触发处理程序
-    run_flag = 1 ;          // 开始执行效果标志，0：无人   1：有人触发
-  }
-  
-  if(run_flag==1){ //开始运行标志(记录效果开始时的系统运行时间)
-    begin_time = millis();        //记录当前的开始时间
-    run_flag = 2;                 //2代表开始执行动态效果
-  }
-  
-  if(run_flag==2){ //自加计数程序(在运行过程中记录程序循环的次数)
-    run_number = run_number + 1 ; //标志模式运行次数，每次loop自加1
-  }
-  
-  if((millis() - begin_time > run_time_limit) && run_flag == 2 ){//当前模式执行15秒以后停止
-    run_flag = 0;         // 无人运行标志 使用系统运行时间来结束当前效果
-    old_mode = run_mode;  // 记录上次的模式
-    run_mode = 0;         // 重新设置为无人运行模式
-    mode_init_flag = 0;   // 模式复位标志位
-    Mode_Nobody();        // 无人时显示一种随机颜色 （执行一次，生成个颜色就完事）
-    nobody_old_mp3num = random(1,5);//
-    myPlayer.play(nobody_old_mp3num);//播放随机音乐
-    Serial.println("MICROWAVE PIN READY!!!");//打印接受管脚状态
-  }
-  
-  switch (run_mode)
-  {
-    case 0:   Mode_0_Nobody();       break;//一直执行，累计时间，控制无人时的声音
-    case 1:   Mode_1_Morning();      break;//每执行一次效果运动一点
-    case 2:   Mode_2_Lightening();   break;
-    case 3:   Mode_3_rainbow();      break;
-    case 4:   Mode_4_flowing();      break;
-  }
+  //follower_cloud(); //小云程序
+  control_cloud();  //主云程序
+  digitalWrite(2,(!digitalRead(2)));//测试灯
 }
 
 //ICACHE_RAM_ATTR void attachInterrupt_fun()//微波传感器管脚硬件中断
@@ -349,8 +495,9 @@ void attachInterrupt_fun()
       send_b = random(0,255);
     }while(!(send_r >= 200 || send_g >= 200 || send_b >= 200));//如果随机出暗色，就再重新取一次值
   }
-  Serial.print("R:");   Serial.print(send_r);   Serial.print("  ");//查看生成的 R G B M 值
+  Serial.print("R:");   Serial.print(send_r);   Serial.print("  ");//查看生成的 R G B S M 值
   Serial.print("G:");   Serial.print(send_g);   Serial.print("  ");
   Serial.print("B:");   Serial.print(send_b);   Serial.print("  ");
-  Serial.print("M:");  Serial.print(run_mode);  Serial.println("  ");
+  Serial.print("S:");   Serial.print(groups);   Serial.print("  ");//分组信息
+  Serial.print("M:");  Serial.print(run_mode);  Serial.println("  ");//当前模式
 }
