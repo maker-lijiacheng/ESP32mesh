@@ -1,0 +1,102 @@
+Change Component Designator: OldDesignator=DC? NewDesignator=DC5V
+Change Component Designator: OldDesignator=J? NewDesignator=DC4.2V
+Change Component Designator: OldDesignator=J? NewDesignator=sensor
+Change Component Designator: OldDesignator=U? NewDesignator=ws2812
+Added Component: Designator=R1(0603R)
+Add component. Clean all parameters for all variants
+Added Component: Designator=WS1(KF2EDGK5.0W-3P)
+Add component. Clean all parameters for all variants
+Added Component: Designator=WS2(KF2EDGK5.08W-2P)
+Add component. Clean all parameters for all variants
+Added Pin To Net: NetName=0 Pin=J2-4
+Added Net: Name=0
+Added Pin To Net: NetName=3V Pin=J2-13
+Added Pin To Net: NetName=3V Pin=sensor-2
+Added Net: Name=3V
+Added Pin To Net: NetName=4 Pin=J2-5
+Added Net: Name=4
+Added Pin To Net: NetName=5 Pin=J2-8
+Added Net: Name=5
+Added Pin To Net: NetName=5V-ws2812 Pin=WS2-1
+Added Net: Name=5V-ws2812
+Added Pin To Net: NetName=12 Pin=J1-2
+Added Pin To Net: NetName=12 Pin=ws2812-4
+Added Net: Name=12
+Added Pin To Net: NetName=13 Pin=*-5
+Added Pin To Net: NetName=13 Pin=J2-1
+Added Net: Name=13
+Added Pin To Net: NetName=14 Pin=J1-3
+Added Pin To Net: NetName=14 Pin=sensor-3
+Added Net: Name=14
+Added Pin To Net: NetName=15 Pin=J2-2
+Added Pin To Net: NetName=15 Pin=R1-1
+Added Net: Name=15
+Added Pin To Net: NetName=16 Pin=J2-6
+Added Net: Name=16
+Added Pin To Net: NetName=17 Pin=J2-7
+Added Net: Name=17
+Added Pin To Net: NetName=18 Pin=J2-9
+Added Net: Name=18
+Added Pin To Net: NetName=19 Pin=J2-11
+Added Net: Name=19
+Added Pin To Net: NetName=22 Pin=J2-3
+Added Pin To Net: NetName=22 Pin=J2-12
+Added Net: Name=22
+Added Pin To Net: NetName=23 Pin=J2-10
+Added Net: Name=23
+Added Pin To Net: NetName=25 Pin=J1-6
+Added Net: Name=25
+Added Pin To Net: NetName=26 Pin=J1-5
+Added Net: Name=26
+Added Pin To Net: NetName=27 Pin=J1-4
+Added Net: Name=27
+Added Pin To Net: NetName=32 Pin=J1-8
+Added Net: Name=32
+Added Pin To Net: NetName=33 Pin=J1-7
+Added Net: Name=33
+Added Pin To Net: NetName=34 Pin=J1-10
+Added Net: Name=34
+Added Pin To Net: NetName=35 Pin=J1-9
+Added Net: Name=35
+Added Pin To Net: NetName=EN Pin=J1-11
+Added Net: Name=EN
+Added Pin To Net: NetName=GND Pin=*-3
+Added Pin To Net: NetName=GND Pin=DC4.2V-1
+Added Pin To Net: NetName=GND Pin=DC5V-2
+Added Pin To Net: NetName=GND Pin=DC5V-3
+Added Pin To Net: NetName=GND Pin=J1-1
+Added Pin To Net: NetName=GND Pin=sensor-1
+Added Pin To Net: NetName=GND Pin=WS1-3
+Added Pin To Net: NetName=GND Pin=WS2-2
+Added Pin To Net: NetName=GND Pin=ws2812-3
+Added Pin To Net: NetName=GND Pin=XH2.54-2
+Added Net: Name=GND
+Added Pin To Net: NetName=Net*_1 Pin=*-1
+Added Pin To Net: NetName=Net*_1 Pin=VD2-2
+Added Pin To Net: NetName=Net*_1 Pin=ws2812-1
+Added Net: Name=Net*_1
+Added Pin To Net: NetName=Net*_2 Pin=*-2
+Added Pin To Net: NetName=Net*_2 Pin=DC5V-1
+Added Pin To Net: NetName=Net*_2 Pin=VD1-1
+Added Pin To Net: NetName=Net*_2 Pin=VD2-1
+Added Pin To Net: NetName=Net*_2 Pin=WS1-2
+Added Pin To Net: NetName=Net*_2 Pin=XH2.54-1
+Added Net: Name=Net*_2
+Added Pin To Net: NetName=Net*_4 Pin=*-4
+Added Pin To Net: NetName=Net*_4 Pin=R1-2
+Added Net: Name=Net*_4
+Added Pin To Net: NetName=NetDC4.2V_2 Pin=DC4.2V-2
+Added Pin To Net: NetName=NetDC4.2V_2 Pin=VD1-2
+Added Net: Name=NetDC4.2V_2
+Added Pin To Net: NetName=NetWS1_1 Pin=WS1-1
+Added Pin To Net: NetName=NetWS1_1 Pin=ws2812-2
+Added Net: Name=NetWS1_1
+Added Pin To Net: NetName=VN Pin=J1-12
+Added Net: Name=VN
+Added Pin To Net: NetName=VP Pin=J1-13
+Added Net: Name=VP
+Added Member To Class: ClassName=esp32 Member=Component R1 1K
+Added Member To Class: ClassName=esp32 Member=Component sensor Pin HDR1X3
+Added Member To Class: ClassName=esp32 Member=Component WS1 KF2EDGK-3P
+Added Member To Class: ClassName=esp32 Member=Component WS2 KF2EDGK-2P
+Added Room: Name=esp32

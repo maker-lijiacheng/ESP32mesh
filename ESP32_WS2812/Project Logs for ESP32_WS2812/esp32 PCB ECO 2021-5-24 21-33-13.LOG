@@ -1,0 +1,28 @@
+Added Component: Designator=*(XH2.54-WS-5P)
+Add component. Clean all parameters for all variants
+Added Component: Designator=DC?(DC-005)
+Add component. Clean all parameters for all variants
+Added Component: Designator=J1(Fe-HDR1X13/2.54-S)
+Add component. Clean all parameters for all variants
+Added Component: Designator=J2(Fe-HDR1X13/2.54-S)
+Add component. Clean all parameters for all variants
+Added Component: Designator=J?(PH2.0WS-2P)
+Add component. Clean all parameters for all variants
+Added Component: Designator=J?(Pin HDR1X3/2.54mm-W)
+Add component. Clean all parameters for all variants
+Added Component: Designator=U?(WS2812B)
+Add component. Clean all parameters for all variants
+Added Component: Designator=VD1(SMA)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "BOM名称"; Value = "整流二极管"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "学习资源"; Value = "www.ooocke.com"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "版权归属"; Value = "源创客"; VariantName = "[No Variations]"
+Added Component: Designator=VD2(SMA)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "BOM名称"; Value = "整流二极管"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "学习资源"; Value = "www.ooocke.com"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "版权归属"; Value = "源创客"; VariantName = "[No Variations]"
+Added Component: Designator=XH2.54(XH2.54-WS-2P)
+Add component. Clean all parameters for all variants
+Added Class: Name=esp32
+Added Room: Name=esp32

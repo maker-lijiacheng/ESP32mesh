@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=GND Pin=J?-1
+Removed Pin From Net: NetName=14 Pin=J?-3
+Added Pin To Net: NetName=14 Pin=J?-1
+Added Pin To Net: NetName=GND Pin=J?-3
+Added Room: Name=esp32
