@@ -11,7 +11,7 @@ Scheduler userScheduler;  // to control your personal task 创建子线程
 painlessMesh  mesh;       // 定义mesh联网
 
 #define PIN           12  //灯带管脚
-#define NUMPIXELS     300 //灯带数量    //NUMPIXELS=strip.numPixels();
+#define NUMPIXELS     14 //灯带数量    //NUMPIXELS=strip.numPixels();
 #define MICROWAVEPIN  16  //微波传感器管脚
 #define BRIGHTNES     255  //灯带亮度设置 0~255
 
@@ -24,13 +24,13 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800
 
 Task taskSendMessage( TASK_SECOND * 1 , TASK_FOREVER, &sendMessage ); //创建一个子任务 间隔为一秒执行一次（初始化发送时间间隔）
 
-int mp3_volume = 20;//MP3模块音量值
-int run_mode = 0; //云朵运行的模式值
-int old_mode = 0;//记录上次的模式
-int run_flag = 0 ;//微波传感器有人标志
-int run_number = 0;//有人状态时loop()运行次数
-int begin_time = 0 ;//有人状态时的时间标志位
-int normal_time = 0 ;//无人状态时的时间标志位
+int mp3_volume = 20;  //MP3模块音量值
+int run_mode = 0;     //云朵运行的模式值
+int old_mode = 0;     //记录上次的模式
+int run_flag = 0 ;    //微波传感器有人标志
+int run_number = 0;   //有人状态时loop()运行次数
+int begin_time = 0 ;  //有人状态时的时间标志位
+int normal_time = 0 ; //无人状态时的时间标志位
 int run_time_limit = 15000;//每种模式的运行时间 15s
 
 int mp3_begin_time = 0 ;//无人状态时的音乐开始时间标志位
@@ -105,6 +105,8 @@ int run_mode_time = -300000;//随机mode时间标记
 int send_mode = 0;
 int save_mode = 0;
 
+int follow_send_mode = 0;
+
 void sendMessage() //每隔一秒发送一次数据
 { 
   String msg = "";
@@ -114,22 +116,23 @@ void sendMessage() //每隔一秒发送一次数据
     //msg += mesh.getNodeId();//字符串末尾添加信息来源
     msg = msg + "R" + String(send_r) + "G" + String(send_g) + "B" + String(send_b);
     msg = msg + "S" + String(groups);//
-    if(sendMessage_EN == 1 && groups == 1){
+    if(groups == 1){
         msg = msg + "M" + String(send_mode);//发送mode值给其他云 0：无人模式 1~4:4种运行模式
-    }else{
-        //只有0001发送0、1、2、3、4.其他主云发送的都是5 
-        msg = msg + "M" + String(5);
+    }
+    if(groups == 2 || groups == 3 || groups == 4){
+        //只有0001发送0、1、2、3、4. 其他主云收到后记住并发送给其他子云
+        msg = msg + "M" + String(follow_send_mode);
     }
     mesh.sendBroadcast( msg );//向网络中发送msg字符串
+    //Serial.println("mesh send msg successful !!!!");
   }
   //taskSendMessage.setInterval(200);//重新设置发送间隔，单位ms
 }
 
-void receivedCallback( uint32_t from, String &msg ) {//收到消息 （ID，字符串）
+void receivedCallback( uint32_t from, String &msg ){//收到消息 （ID，字符串）
 //读取mesh组网中的公共消息
   Serial.printf("ID:%u MSG:%s\n", from, msg.c_str());
   // 解析字符串
-  
   read_r = String(msg.substring(msg.indexOf("R")+1,msg.indexOf("G"))).toInt();//截取并转为int类型
   read_g = String(msg.substring(msg.indexOf("G")+1,msg.indexOf("B"))).toInt();
   read_b = String(msg.substring(msg.indexOf("B")+1,msg.indexOf("S"))).toInt();
@@ -147,6 +150,7 @@ void receivedCallback( uint32_t from, String &msg ) {//收到消息 （ID，字�
     Mode_0_G = read_g ;
     Mode_0_B = read_b ;
   }
+  follow_send_mode = read_mode;//其他
 }
 
 void newConnectionCallback(uint32_t nodeId) {//mesh网络中检测到新节点，并读取nodeID值
@@ -222,6 +226,7 @@ void Mode_1_Morning()//清晨模式 单步运行
   if(mode_init_flag == 0){//只复位一次
     Mode_1_Morning_Init();
     mode_init_flag = 1;
+    Serial.println("run:Mode_1_Morning");
   }
   if(Mode_1_i<=20){//0-深蓝
     for(int i=0; i<strip.numPixels(); i++) {
@@ -229,7 +234,7 @@ void Mode_1_Morning()//清晨模式 单步运行
     }
   }else if(60<Mode_1_i && Mode_1_i<=120){//深蓝-黄
     for(int i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i,strip.Color((Mode_1_i-60)*(Mode_1_yellow_R-Mode_1_blue_R)/60+Mode_1_blue_R,(Mode_1_i-60)*(Mode_1_yellow_G-Mode_1_blue_G)/60+Mode_1_blue_G,(Mode_1_i-60)*(Mode_1_blue_B-Mode_1_yellow_B)/60+Mode_1_yellow_B));
+      strip.setPixelColor(i,strip.Color((Mode_1_i-60)*(Mode_1_yellow_R-Mode_1_blue_R)/60+Mode_1_blue_R,(Mode_1_i-60)*(Mode_1_yellow_G-Mode_1_blue_G)/60+Mode_1_blue_G,Mode_1_blue_B-(Mode_1_i-60)*(Mode_1_blue_B-Mode_1_yellow_B)/60));
     }
   }else if(160<Mode_1_i && Mode_1_i<=220){//黄-白
     for(int i=0; i<strip.numPixels(); i++) {
@@ -245,7 +250,7 @@ void Mode_1_Morning()//清晨模式 单步运行
     }
     Mode_1_i = 0;
   }
-  if(millis() - Mode_1_oldtime > 45){//这里调节变换的速度
+  if(millis() - Mode_1_oldtime > 60){//这里调节变换的速度
     Mode_1_i = Mode_1_i + 1 ; //序号灯每次自加1
     Mode_1_oldtime = millis() ;//记录上次累加时间
   }
@@ -265,6 +270,7 @@ void Mode_2_Lightening()//闪电模式 单步运行
   if(mode_init_flag == 0){//只复位一次
     Mode_2_Lightening_Init();
     mode_init_flag = 1;
+    Serial.println("run:Mode_2_Lightening");
   }
   if(millis() - Mode_2_oldtime > Mode_2_flashtime){
     Mode_2_flashtime = 15000;//random(10000,15000);//这里设置闪电模式每一阶段的间隔时间范围
@@ -346,6 +352,7 @@ void Mode_2_Lightening()//闪电模式 单步运行
       Mode_Stop();//熄灭所有灯 
       Mode_2_oldtime =  millis();
     }
+    Mode_2_runmode = 1;
   }
 }
 void Mode_2_Lightening_Init()//闪电模式 初始化
@@ -363,6 +370,7 @@ void Mode_3_rainbow()//七彩模式 单步运行
   if(mode_init_flag == 0){//只复位一次
     Mode_3_rainbow_Init();
     mode_init_flag = 1;
+    Serial.println("run:Mode_3_rainbow");
   }
   //生成一组彩虹色
   
@@ -389,6 +397,7 @@ void Mode_4_flowing()//流动模式 单步运行
   if(mode_init_flag == 0){//只复位一次
     Mode_4_flowing_Init();
     mode_init_flag = 1;
+    Serial.println("run:Mode_4_flowing");
   }
   if(Mode_4_i<=strip.numPixels()*3/4){
     for(int i=Mode_4_i; i<(Mode_4_i+(strip.numPixels()*1/4)); i++) {    
@@ -434,7 +443,7 @@ void Mode_0_Nobody(){//无人模式 控制随机生成音乐
       nobody_new_mp3num = random(1,5);
     }while(nobody_new_mp3num == nobody_old_mp3num);//随机1~4音乐序号
     
-    Serial.println("Mode_0_Nobody();");
+    Serial.println("run:Mode_0_Nobody()");
     Serial.print("old_MP3_number:");   Serial.println(nobody_old_mp3num);//打印无人时，随机生成的音乐序号
     Serial.print("new_MP3_number:");   Serial.println(nobody_new_mp3num);//打印无人时，随机生成的音乐序号
     mp3_begin_time = millis();    //重置时间初始标志
@@ -568,6 +577,7 @@ void setup() {
   colorWipeAll(strip.Color(  0,   0, 255));
   rainbow(20);
   rainbowCycle(20); */
+  Serial.println("****System setup success****");
 }
 
 void loop(){
@@ -595,24 +605,23 @@ void attachInterrupt_fun()
         run_mode_time = millis();
         send_mode = run_mode;
         save_mode = run_mode;
-    }else if(sendMessage_EN == 1 && groups == 1 &&(millis() - run_mode_time < 300000)){
+    }
+    if(sendMessage_EN == 1 && groups == 1 && ((millis() - run_mode_time) < 300000)){
         run_mode = save_mode;
         send_mode = save_mode;
     }
-
-
+    if(sendMessage_EN == 1 && (groups == 2 || groups == 3 || groups == 4)){//其他主云
+        run_mode = follow_send_mode;
+    }
     do{
       send_r = random(0,255);
       send_g = random(0,255);
       send_b = random(0,255);
-    }while(!(send_r >= 200 || send_g >= 200 || send_b >= 200));//如果随机出暗色，就再重新取一次值
+    }while(!((send_r >= 200 || send_g >= 200 || send_b >= 200) && (send_r <= 50 || send_g <= 50 || send_b <= 50)));//如果随机出暗色，就再重新取一次值
   }
   Serial.print("R:");   Serial.print(send_r);   Serial.print("  ");//查看生成的 R G B S M 值
   Serial.print("G:");   Serial.print(send_g);   Serial.print("  ");
   Serial.print("B:");   Serial.print(send_b);   Serial.print("  ");
   Serial.print("S:");   Serial.print(groups);   Serial.print("  ");//分组信息
   Serial.print("M:");  Serial.print(run_mode);  Serial.println("  ");//当前模式
-
-
-
 }
