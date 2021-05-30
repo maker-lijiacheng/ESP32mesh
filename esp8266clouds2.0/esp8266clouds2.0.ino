@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include <SoftwareSerial.h>
 #include "DFRobotDFPlayerMini.h"
-#include <Adafruit_NeoPixel.h>
+#include <Adafruit_NeoPixel.h>//使用时请把库更新至最新！！
 #include "painlessMesh.h"
 
 #define   MESH_PREFIX     "whateverYouLike"
@@ -582,8 +582,8 @@ void setup() {
 
 void loop(){
   mesh.update();    //尽可能让这句话频繁运行
-  follower_cloud(); //小云程序
-  //control_cloud();  //主云程序
+  //follower_cloud(); //小云程序
+  control_cloud();  //主云程序
   //digitalWrite(2,(!digitalRead(2)));//测试灯
   delay(20);
 }
