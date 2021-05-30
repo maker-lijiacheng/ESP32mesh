@@ -11,14 +11,14 @@ Scheduler userScheduler;  // to control your personal task 创建子线程
 painlessMesh  mesh;       // 定义mesh联网
 
 #define PIN           12  //灯带管脚
-#define NUMPIXELS     14 //灯带数量    //NUMPIXELS=strip.numPixels();
-#define MICROWAVEPIN  16  //微波传感器管脚
+#define NUMPIXELS     300//灯带数量    //NUMPIXELS=strip.numPixels();
+#define MICROWAVEPIN  14  //微波传感器管脚
 #define BRIGHTNES     255  //灯带亮度设置 0~255
 
 void sendMessage(); // Prototype so PlatformIO doesn't complain
 void attachInterrupt_fun();
 
-SoftwareSerial mySerial(13, 14);  //MP3模块软串口管脚 13 14
+SoftwareSerial mySerial(13, 15);  //MP3模块软串口管脚 13 14
 DFRobotDFPlayerMini myPlayer;     //定义MP3模块
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);//初始化灯带
 
@@ -564,7 +564,7 @@ void setup() {
   taskSendMessage.enable();                 //子线程使能
   
   pinMode(MICROWAVEPIN, INPUT);             //初始化微波传感器管脚为输入模式
-  pinMode(2, OUTPUT); //调试小灯，每次loop闪烁一次
+//  pinMode(2, OUTPUT); //调试小灯，每次loop闪烁一次
 //  run_mode = random(1,5);//随机一种模式
 //  send_mode = random(1,5);
 //  save_mode = random(1,5);
@@ -582,10 +582,10 @@ void setup() {
 
 void loop(){
   mesh.update();    //尽可能让这句话频繁运行
-  //follower_cloud(); //小云程序
-  control_cloud();  //主云程序
+  follower_cloud(); //小云程序
+  //control_cloud();  //主云程序
   //digitalWrite(2,(!digitalRead(2)));//测试灯
-  delay(10);
+  delay(20);
 }
 
 //ICACHE_RAM_ATTR void attachInterrupt_fun()//微波传感器管脚硬件中断
